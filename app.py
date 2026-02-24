@@ -466,7 +466,7 @@ def delete_admin_user(id):
 def ping():
     return "pong", 200
 
-# ─── CONFIGURAÇÃO PARA O RENDER ───────────────────────────────────────────────
+# ─── CONFIGURAÇÃO PARA O RENDER ─────────────────────────────────
 
 if __name__ == '__main__':
     # Modo desenvolvimento (local)
@@ -474,4 +474,5 @@ if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
 else:
     # Modo produção (Render)
-    application = app  # LINHA CRÍTICA PARA O RENDER FUNCIONAR!
+    application = app  # LINHA CRÍTICA PARA O RENDER
+    # O Render usa a variável de ambiente PORT
