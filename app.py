@@ -167,9 +167,7 @@ def fmt_datetime(d):
 
 
 # ═══════════════════════════════════════════════════════════════
-#  USSD HANDLER — Africa's Talking
 #  Callback URL: https://alerta-nampula.onrender.com/ussd
-#  Os dados são os MESMOS do site (mesma BD)
 # ═══════════════════════════════════════════════════════════════
 
 @app.route('/ussd', methods=['POST'])
@@ -202,8 +200,7 @@ def _processar_ussd(partes, telefone):
 
 def _menu_principal():
     return (
-        'CON ★ ALERTA NAMPULA ★\n'
-        '─────────────────────\n'
+        'CON  ALERTA NAMPULA \n'
         '1. Ver Alertas Activos\n'
         '2. Zonas Seguras\n'
         '3. Pedir Ajuda\n'
@@ -282,7 +279,7 @@ def _menu_zonas(partes):
 def _menu_ajuda(partes, telefone):
     if len(partes) == 1:
         return (
-            'CON ⚠ PEDIR AJUDA\n'
+            'CON PEDIR AJUDA\n'
             '1. RESGATE URGENTE\n'
             '2. Água potável\n'
             '3. Alimentos\n'
@@ -406,8 +403,8 @@ def _menu_voluntariado(partes, telefone):
     if partes[1] == '2':
         return (
             'END DOAÇÕES:\n'
-            'M-Pesa Cruz Vermelha: 843\n'
-            'M-Pesa INGC: 844\n'
+            'M-Pesa Atemdimento: 847791199\n'
+            'M-Pesa INGC: 847791199\n'
             'Site: alerta-nampula.onrender.com'
         )
 
@@ -936,3 +933,4 @@ application = app
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(debug=True, host='0.0.0.0', port=port)
+
