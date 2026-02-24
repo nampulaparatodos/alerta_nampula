@@ -460,6 +460,92 @@ def delete_admin_user(id):
     flash('Administrador eliminado.', 'success')
     return redirect(url_for('admin_dashboard', tab='tab-admins'))
 
+
+# ─── BACKUP AUTOMÁTICO ─────────────────────────────────────────
+
+@app.route('/cron/backup_auto')
+def backup_auto():
+    import shutil
+    from datetime import datetime
+    import os
+    
+    # 🔐 SUA CHAVE SECRETA - guarde bem!
+    CHAVE_SECRETA = 'AlertaN4mpul4@2026!'
+    
+    # Verificar se a chave está correta
+    if request.args.get('chave') != CHAVE_SECRETA:
+        return 'Erro: Chave inválida', 403
+    
+    try:
+        # Criar pasta backups se não existir
+        if not os.path.exists('backups'):
+            os.makedirs('backups')
+        
+        # Nome do backup com data e hora
+        agora = datetime.now().strftime('%Y%m%d_%H%M%S')
+        backup_file = f'backups/backup_{agora}.db'
+        
+        # Copiar o banco de dados
+        if os.path.exists('alerta.db'):
+            shutil.copy('alerta.db', backup_file)
+        else:
+            return 'Erro: alerta.db não encontrado', 404
+        
+        # Manter apenas os últimos 30 backups
+        backups = sorted([f for f in os.listdir('backups') if f.endswith('.db')])
+        while len(backups) > 30:
+            os.remove(os.path.join('backups', backups.pop(0)))
+        
+        return f'✅ Backup criado: backup_{agora}.db'
+    
+    except Exception as e:
+        return f'❌ Erro: {str(e)}', 500
+
+# ─── LISTAR BACKUPS (OPCIONAL, PRECISA DE LOGIN) ──────────────
+
+@app.route('/admin/backups')
+@login_required
+def listar_backups():
+    import os
+    from flask import render_template_string
+    
+    if not os.path.exists('backups'):
+        return 'Nenhum backup encontrado'
+    
+    backups = sorted([f for f in os.listdir('backups') if f.endswith('.db')], reverse=True)
+    
+    html = '''
+    <h1>Backups Disponíveis</h1>
+    <ul>
+    {% for b in backups %}
+        <li>
+            <a href="/admin/backup/{{ b }}">{{ b }}</a>
+        </li>
+    {% endfor %}
+    </ul>
+    <p><a href="/admin">← Voltar ao Admin</a></p>
+    '''
+    
+    from jinja2 import Template
+    t = Template(html)
+    return t.render(backups=backups)
+
+@app.route('/admin/backup/<nome>')
+@login_required
+def baixar_backup(nome):
+    from flask import send_file
+    import os
+    
+    # Segurança: evitar acesso a outros diretórios
+    if '..' in nome or not nome.startswith('backup_'):
+        return 'Ficheiro inválido', 400
+    
+    caminho = os.path.join('backups', nome)
+    if not os.path.exists(caminho):
+        return 'Backup não encontrado', 404
+    
+    return send_file(caminho, as_attachment=True)
+
 # ─── ROTA DE TESTE PARA VERIFICAR SE O SERVIDOR ESTÁ VIVO ────────────────────
 
 @app.route('/ping')
@@ -476,3 +562,4 @@ else:
     # Modo produção (Render)
     application = app  # LINHA CRÍTICA PARA O RENDER
     # O Render usa a variável de ambiente PORT
+
