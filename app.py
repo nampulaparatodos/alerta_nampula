@@ -460,8 +460,18 @@ def delete_admin_user(id):
     flash('Administrador eliminado.', 'success')
     return redirect(url_for('admin_dashboard', tab='tab-admins'))
 
-# ─────────────────────────────────────────────────────────────────────────────
+# ─── ROTA DE TESTE PARA VERIFICAR SE O SERVIDOR ESTÁ VIVO ────────────────────
+
+@app.route('/ping')
+def ping():
+    return "pong", 200
+
+# ─── CONFIGURAÇÃO PARA O RENDER ───────────────────────────────────────────────
 
 if __name__ == '__main__':
+    # Modo desenvolvimento (local)
     init_db()
     app.run(debug=True, host='0.0.0.0', port=5000)
+else:
+    # Modo produção (Render)
+    application = app  # LINHA CRÍTICA PARA O RENDER FUNCIONAR!
