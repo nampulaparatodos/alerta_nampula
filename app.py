@@ -920,17 +920,19 @@ def baixar_backup(nome):
 def ping():
     return 'pong', 200
 
+
 # ═══════════════════════════════════════════════════════════════
 #  ARRANQUE CORRECTO PARA RENDER
 # ═══════════════════════════════════════════════════════════════
 
-# Inicializa SEMPRE a base de dados (inclusive no Render)
+# Inicializa a base de dados (executado apenas uma vez)
 with app.app_context():
     init_db()
 
-# Para Gunicorn (Render)
+# ✅ EXPORTA a aplicação para o Gunicorn (Render)
 application = app
 
-# Para execução local opcional
+# PARA TESTES LOCAIS APENAS
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    port = int(os.environ.get('PORT', 5000))
+    app.run(debug=True, host='0.0.0.0', port=port)
