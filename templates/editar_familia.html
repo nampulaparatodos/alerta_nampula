@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Editar Família — {{ cfg.nome }}</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#04080f;--card:#0e1929;--border:rgba(99,179,237,.1);--cyan:#06b6d4;--text:#dbeafe;--muted:#64748b;}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.box{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:36px;width:100%;max-width:600px}
+.box-title{font-size:1.1rem;font-weight:800;color:#fff;display:flex;align-items:center;gap:10px;margin-bottom:28px}
+.box-title i{color:var(--cyan)}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:500px){.form-grid{grid-template-columns:1fr}}
+.fg{margin-bottom:18px}
+.fl{display:block;font-size:.73rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:8px}
+.fi{width:100%;padding:12px 15px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:11px;color:#fff;font-size:.92rem;font-family:inherit;transition:.2s}
+.fi:focus{outline:none;border-color:rgba(37,99,235,.5);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+textarea.fi{min-height:100px;resize:vertical}
+select.fi option{background:#0a1225}
+.actions{display:flex;gap:10px;margin-top:8px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:12px 22px;border-radius:11px;font-size:.88rem;font-weight:700;cursor:pointer;border:none;font-family:inherit;text-decoration:none;transition:.2s}
+.btn-primary{background:linear-gradient(135deg,#2563eb,#06b6d4);color:#fff}
+.btn-primary:hover{opacity:.9;transform:translateY(-1px)}
+.btn-ghost{background:rgba(255,255,255,.06);color:var(--muted);border:1px solid var(--border)}
+.btn-ghost:hover{color:#fff}
+</style>
+</head>
+<body>
+<div class="box">
+  <div class="box-title"><i class="fas fa-house-chimney-crack"></i> Editar Família Afectada</div>
+  <form action="/admin/familia/editar/{{ familia['id'] }}" method="POST">
+    <div class="form-grid">
+      <div class="fg">
+        <label class="fl">Bairro / Localidade *</label>
+        <input type="text" name="bairro" class="fi" value="{{ familia['bairro'] }}" required>
+      </div>
+      <div class="fg">
+        <label class="fl">Número de Famílias *</label>
+        <input type="number" name="numero" class="fi" value="{{ familia['numero'] }}" min="1" required>
+      </div>
+    </div>
+    <div class="form-grid">
+      <div class="fg">
+        <label class="fl">Situação *</label>
+        <select name="situacao" class="fi" required>
+          <option value="Inundações" {% if familia['situacao']=='Inundações' %}selected{% endif %}>Inundações</option>
+          <option value="Ciclone"    {% if familia['situacao']=='Ciclone'    %}selected{% endif %}>Ciclone</option>
+          <option value="Seca"       {% if familia['situacao']=='Seca'       %}selected{% endif %}>Seca</option>
+          <option value="Incêndio"   {% if familia['situacao']=='Incêndio'   %}selected{% endif %}>Incêndio</option>
+          <option value="Conflito"   {% if familia['situacao']=='Conflito'   %}selected{% endif %}>Conflito</option>
+          <option value="Outro"      {% if familia['situacao']=='Outro'      %}selected{% endif %}>Outro</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label class="fl">Local de Abrigo *</label>
+        <input type="text" name="abrigo" class="fi" value="{{ familia['abrigo'] }}" required>
+      </div>
+    </div>
+    <div class="fg">
+      <label class="fl">Necessidades Identificadas *</label>
+      <textarea name="necessidades" class="fi" required>{{ familia['necessidades'] }}</textarea>
+    </div>
+    <div class="actions">
+      <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Guardar Alterações</button>
+      <a href="/admin?tab=tab-familias" class="btn btn-ghost"><i class="fas fa-arrow-left"></i> Cancelar</a>
+    </div>
+  </form>
+</div>
+</body>
+</html>

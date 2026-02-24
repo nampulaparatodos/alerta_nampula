@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel Admin — {{ cfg.nome }}</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Fraunces:ital,opsz,wght@0,9..144,700;0,9..144,900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#04080f;--bg2:#070e1c;--card:#0e1929;--card2:#111f34;--mid:#162035;
+  --border:rgba(99,179,237,.08);--border2:rgba(99,179,237,.12);
+  --blue:#2563eb;--blue2:#1d4ed8;--cyan:#06b6d4;--teal:#0d9488;
+  --emerald:#059669;--red:#ef4444;--orange:#f97316;--amber:#f59e0b;
+  --white:#fff;--text:#dbeafe;--muted:#64748b;--soft:#94a3b8;
+  --sidebar-w:272px;--topbar-h:62px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);display:flex;font-size:15px;overflow:hidden}
+
+/* ===== SIDEBAR ===== */
+.sidebar{width:var(--sidebar-w);background:var(--bg2);border-right:1px solid var(--border);height:100vh;display:flex;flex-direction:column;position:fixed;top:0;left:0;z-index:920;transition:.3s transform;overflow-y:auto;overflow-x:hidden}
+.sb-logo{padding:22px 20px;border-bottom:1px solid var(--border);flex-shrink:0}
+.sb-logo a{display:flex;align-items:center;gap:13px;text-decoration:none}
+.sb-shield{width:40px;height:40px;flex-shrink:0}
+.sb-shield svg{width:100%;height:100%}
+.sb-nm{font-family:'Fraunces',serif;font-size:1.1rem;font-weight:900;color:#fff}
+.sb-tag{font-size:.66rem;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
+.sb-body{flex:1;padding:16px 12px;overflow-y:auto}
+.sb-group{font-size:.65rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:1.3px;padding:0 10px;margin:18px 0 6px}
+.sb-group:first-child{margin-top:4px}
+.sbi{display:flex;align-items:center;gap:11px;padding:11px 12px;border-radius:11px;cursor:pointer;transition:.2s all;color:var(--soft);font-size:.875rem;font-weight:500;text-decoration:none;border:none;background:none;width:100%;font-family:inherit;position:relative}
+.sbi:hover{background:rgba(255,255,255,.05);color:var(--text)}
+.sbi.active{background:rgba(37,99,235,.15);color:#fff;border:1px solid rgba(37,99,235,.2)}
+.sbi.active .sbi-icon{color:var(--cyan)}
+.sbi-icon{width:18px;text-align:center;font-size:.9rem;flex-shrink:0}
+.sbi-badge{margin-left:auto;background:rgba(239,68,68,.8);color:#fff;border-radius:20px;padding:2px 8px;font-size:.66rem;font-weight:800;line-height:1.4;flex-shrink:0}
+.sbi-badge.blue{background:rgba(37,99,235,.6)}
+.sbi.danger{color:#f87171}
+.sbi.danger:hover{background:rgba(239,68,68,.08);color:var(--red)}
+.sb-user{padding:16px 18px;border-top:1px solid var(--border);flex-shrink:0;display:flex;align-items:center;gap:12px}
+.sb-av{width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,var(--blue),var(--cyan));display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:.95rem;flex-shrink:0}
+.sb-un{font-size:.88rem;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sb-ul{font-size:.7rem;color:var(--muted);margin-top:1px}
+.sb-online{width:8px;height:8px;background:var(--emerald);border-radius:50%;box-shadow:0 0 6px rgba(5,150,105,.6);margin-left:auto;flex-shrink:0}
+
+/* ===== BACKDROP ===== */
+.sb-backdrop{display:none;position:fixed;inset:0;z-index:910;background:rgba(0,0,0,.65)}
+.sb-backdrop.show{display:block}
+
+/* ===== MAIN ===== */
+.main{flex:1;margin-left:var(--sidebar-w);display:flex;flex-direction:column;height:100vh;overflow:hidden}
+
+/* ===== TOPBAR — ALWAYS FIXED ===== */
+.topbar{
+  background:rgba(7,14,28,.98);
+  backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);
+  padding:0 20px;
+  height:var(--topbar-h);
+  min-height:var(--topbar-h);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  flex-shrink:0;
+  gap:8px;
+  position:sticky;top:0;z-index:800;width:100%;
+}
+.tb-left{display:flex;align-items:center;gap:10px;flex:1;min-width:0;overflow:hidden}
+
+/* Hamburger — ALWAYS in DOM. Shown on mobile via media query */
+.mob-tog{
+  display:none;
+  align-items:center;justify-content:center;
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:9px;
+  width:38px;height:38px;min-width:38px;
+  color:var(--text);font-size:1rem;
+  cursor:pointer;flex-shrink:0;transition:.2s;
+}
+.mob-tog:hover{background:rgba(255,255,255,.12)}
+.mob-tog.open{background:rgba(37,99,235,.2);border-color:rgba(37,99,235,.35);color:var(--cyan)}
+
+.page-name{font-size:.9rem;font-weight:700;color:#fff;display:flex;align-items:center;gap:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.page-name i{color:var(--cyan);flex-shrink:0}
+
+/* RIGHT side — NEVER HIDES, NEVER SHRINKS */
+.tb-right{
+  display:flex !important;
+  align-items:center;
+  gap:6px;
+  flex-shrink:0;
+  min-width:0;
+}
+
+/* Admin name chip */
+.tb-admin-chip{
+  display:flex;align-items:center;gap:7px;
+  background:rgba(37,99,235,.1);border:1px solid rgba(37,99,235,.2);
+  border-radius:10px;padding:5px 10px;
+  font-size:.78rem;font-weight:700;color:#fff;flex-shrink:0;
+}
+.av-sm{width:24px;height:24px;border-radius:6px;background:linear-gradient(135deg,var(--blue),var(--cyan));display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:800;color:#fff;flex-shrink:0}
+
+/* Notification bell */
+.notif-btn{
+  position:relative;width:36px;height:36px;border-radius:9px;
+  background:rgba(255,255,255,.05);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;color:var(--soft);font-size:.88rem;
+  transition:.2s;flex-shrink:0;
+}
+.notif-btn:hover{background:rgba(255,255,255,.1);color:#fff}
+.notif-dot{
+  position:absolute;top:5px;right:5px;width:8px;height:8px;border-radius:50%;
+  background:var(--red);border:2px solid var(--bg2);
+  animation:pulse 2s infinite;
+}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.4)}50%{box-shadow:0 0 0 5px rgba(239,68,68,0)}}
+
+/* Notifications dropdown */
+.notif-drop{
+  position:fixed;top:calc(var(--topbar-h) + 6px);right:16px;
+  width:340px;max-width:calc(100vw - 32px);
+  background:var(--card2);border:1px solid var(--border2);
+  border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.6);
+  z-index:1000;display:none;overflow:hidden;
+}
+.notif-drop.show{display:block}
+.notif-head{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.notif-head-title{font-size:.86rem;font-weight:700;color:#fff}
+.notif-mark{font-size:.74rem;color:var(--cyan);cursor:pointer;background:none;border:none;font-family:inherit;padding:0}
+.notif-mark:hover{text-decoration:underline}
+.notif-list{max-height:300px;overflow-y:auto}
+.notif-item{padding:13px 18px;border-bottom:1px solid var(--border);display:flex;gap:11px;align-items:flex-start;cursor:pointer;transition:.15s}
+.notif-item:hover{background:rgba(255,255,255,.03)}
+.notif-item.unread{background:rgba(37,99,235,.05)}
+.notif-ico{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.82rem;flex-shrink:0}
+.notif-ico.apoio{background:rgba(5,150,105,.12);color:#34d399}
+.notif-ico.familia{background:rgba(239,68,68,.1);color:#f87171}
+.notif-ico.zona{background:rgba(6,182,212,.1);color:var(--cyan)}
+.notif-txt{flex:1;min-width:0}
+.notif-ttl{font-size:.82rem;font-weight:600;color:#fff;margin-bottom:2px}
+.notif-sub{font-size:.75rem;color:var(--muted)}
+.notif-time{font-size:.69rem;color:var(--muted);white-space:nowrap;flex-shrink:0}
+.notif-empty{padding:28px;text-align:center;color:var(--muted);font-size:.84rem}
+
+/* ===== BUTTONS ===== */
+.btn{display:inline-flex;align-items:center;gap:7px;padding:8px 14px;border-radius:10px;font-size:.82rem;font-weight:700;cursor:pointer;border:none;font-family:inherit;text-decoration:none;transition:.25s;white-space:nowrap;flex-shrink:0}
+.btn-primary{background:linear-gradient(135deg,var(--blue),var(--cyan));color:#fff;box-shadow:0 2px 12px rgba(37,99,235,.3)}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(37,99,235,.4);color:#fff}
+.btn-danger{background:rgba(239,68,68,.1);color:#f87171;border:1px solid rgba(239,68,68,.2)}
+.btn-danger:hover{background:var(--red);color:#fff}
+.btn-warn{background:rgba(245,158,11,.1);color:var(--amber);border:1px solid rgba(245,158,11,.15)}
+.btn-warn:hover{background:var(--amber);color:#000}
+.btn-teal{background:rgba(6,182,212,.1);color:var(--cyan);border:1px solid rgba(6,182,212,.15)}
+.btn-teal:hover{background:var(--cyan);color:#000}
+.btn-ghost{background:rgba(255,255,255,.05);color:var(--soft);border:1px solid var(--border)}
+.btn-ghost:hover{background:rgba(255,255,255,.08);color:#fff}
+.btn-emerald{background:rgba(5,150,105,.1);color:#34d399;border:1px solid rgba(5,150,105,.2)}
+.btn-emerald:hover{background:var(--emerald);color:#fff}
+
+/* ===== BODY ===== */
+.body{flex:1;overflow-y:auto;padding:24px 20px}
+
+/* ===== FLASH ===== */
+.flash{padding:13px 18px;border-radius:12px;margin-bottom:22px;font-size:.87rem;display:flex;align-items:center;gap:10px}
+.flash.success{background:rgba(5,150,105,.08);border:1px solid rgba(5,150,105,.2);color:#34d399}
+.flash.error{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);color:#f87171}
+
+/* ===== STATS ===== */
+.stats-row{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:28px}
+.s-card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:20px;display:flex;flex-direction:column;gap:16px;transition:.25s;position:relative;overflow:hidden}
+.s-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;opacity:0;transition:.25s}
+.s-card:hover::after{opacity:1}
+.s-card:hover{border-color:var(--border2);transform:translateY(-3px);box-shadow:0 12px 40px rgba(0,0,0,.3)}
+.s-card.blue::after{background:linear-gradient(90deg,var(--blue),var(--cyan))}
+.s-card.red::after{background:var(--red)}
+.s-card.green::after{background:var(--emerald)}
+.s-card.orange::after{background:var(--orange)}
+.s-card.purple::after{background:#8b5cf6}
+.s-top{display:flex;align-items:flex-start;justify-content:space-between}
+.s-ico{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.1rem}
+.s-ico.blue{background:rgba(37,99,235,.15);color:var(--cyan)}
+.s-ico.red{background:rgba(239,68,68,.12);color:#f87171}
+.s-ico.green{background:rgba(5,150,105,.12);color:#34d399}
+.s-ico.orange{background:rgba(249,115,22,.1);color:#fb923c}
+.s-ico.purple{background:rgba(139,92,246,.12);color:#a78bfa}
+.s-trend{font-size:.72rem;font-weight:700;padding:3px 9px;border-radius:20px}
+.s-trend.up{background:rgba(5,150,105,.12);color:#34d399}
+.s-trend.warn{background:rgba(245,158,11,.1);color:var(--amber)}
+.s-num{font-family:'Fraunces',serif;font-size:2.2rem;font-weight:900;color:#fff;line-height:1}
+.s-label{font-size:.76rem;color:var(--muted);font-weight:600}
+.s-sub{font-size:.72rem;color:var(--muted);opacity:.7}
+
+/* ===== TABS ===== */
+.tab-bar{display:flex;gap:3px;background:rgba(7,14,28,.8);border:1px solid var(--border);border-radius:14px;padding:5px;margin-bottom:26px;overflow-x:auto;scrollbar-width:none}
+.tab-bar::-webkit-scrollbar{display:none}
+.tb-btn{padding:9px 14px;border-radius:10px;border:none;cursor:pointer;font-size:.82rem;font-weight:600;font-family:inherit;transition:.25s;color:var(--soft);background:none;white-space:nowrap;display:flex;align-items:center;gap:7px}
+.tb-btn:hover{color:var(--text);background:rgba(255,255,255,.05)}
+.tb-btn.active{background:linear-gradient(135deg,var(--blue),var(--cyan));color:#fff;box-shadow:0 2px 16px rgba(37,99,235,.3)}
+.tab-pane{display:none}
+.tab-pane.active{display:block}
+
+/* ===== CARD ===== */
+.card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:26px;margin-bottom:20px}
+.card-title{font-size:.96rem;font-weight:700;color:#fff;display:flex;align-items:center;gap:9px;margin-bottom:22px}
+.card-title i{color:var(--cyan)}
+.card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:12px}
+.card-head .card-title{margin-bottom:0}
+
+/* ===== FORM ===== */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.fg{margin-bottom:16px}
+.fl{display:block;font-size:.74rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:8px}
+.fi{width:100%;padding:11px 15px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:11px;color:#fff;font-size:.9rem;font-family:inherit;transition:.25s}
+.fi:focus{outline:none;border-color:rgba(37,99,235,.4);box-shadow:0 0 0 3px rgba(37,99,235,.1);background:rgba(37,99,235,.05)}
+.fi::placeholder{color:var(--muted)}
+select.fi option{background:#0a1225}
+textarea.fi{min-height:90px;resize:vertical}
+.btn-submit{padding:11px 22px;font-size:.86rem}
+
+/* ===== TABLE ===== */
+.tbl-wrap{overflow-x:auto;border-radius:14px;border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+thead tr{background:rgba(37,99,235,.08)}
+th{padding:12px 16px;text-align:left;font-weight:700;color:var(--muted);font-size:.73rem;text-transform:uppercase;letter-spacing:.6px;white-space:nowrap}
+td{padding:12px 16px;border-top:1px solid var(--border);color:var(--text);vertical-align:middle}
+tbody tr{transition:.15s}
+tbody tr:hover td{background:rgba(255,255,255,.02)}
+.empty td{text-align:center;color:var(--muted);padding:48px;font-size:.88rem}
+.empty td i{display:block;font-size:2rem;margin-bottom:12px;opacity:.2}
+
+/* ===== BADGES ===== */
+.badge{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:20px;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.3px;white-space:nowrap}
+.b-urgente{background:rgba(239,68,68,.1);color:#f87171;border:1px solid rgba(239,68,68,.15)}
+.b-atencao{background:rgba(249,115,22,.08);color:#fb923c;border:1px solid rgba(249,115,22,.15)}
+.b-informativo{background:rgba(37,99,235,.1);color:#93c5fd;border:1px solid rgba(37,99,235,.15)}
+.b-on{background:rgba(5,150,105,.08);color:#34d399;border:1px solid rgba(5,150,105,.15)}
+.b-off{background:rgba(100,100,100,.08);color:var(--muted);border:1px solid var(--border)}
+.b-master{background:rgba(245,158,11,.1);color:var(--amber);border:1px solid rgba(245,158,11,.15)}
+.b-admin{background:rgba(37,99,235,.1);color:#93c5fd;border:1px solid rgba(37,99,235,.15)}
+.b-pendente{background:rgba(245,158,11,.1);color:var(--amber);border:1px solid rgba(245,158,11,.2)}
+.b-confirmado{background:rgba(5,150,105,.08);color:#34d399;border:1px solid rgba(5,150,105,.15)}
+.b-recusado{background:rgba(239,68,68,.08);color:#f87171;border:1px solid rgba(239,68,68,.12)}
+
+/* ===== ACTIONS ===== */
+.acts{display:flex;gap:5px;align-items:center;flex-wrap:wrap}
+.act-btn{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.78rem;cursor:pointer;border:none;font-family:inherit;transition:.2s;text-decoration:none;flex-shrink:0}
+.act-btn.danger{background:rgba(239,68,68,.1);color:#f87171}
+.act-btn.danger:hover{background:var(--red);color:#fff}
+.act-btn.teal{background:rgba(6,182,212,.1);color:var(--cyan)}
+.act-btn.teal:hover{background:var(--cyan);color:#000}
+.act-btn.warn{background:rgba(245,158,11,.1);color:var(--amber)}
+.act-btn.warn:hover{background:var(--amber);color:#000}
+.act-btn.green{background:rgba(5,150,105,.1);color:#34d399}
+.act-btn.green:hover{background:var(--emerald);color:#fff}
+
+
+
+/* ===== CONFIG ===== */
+.config-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.config-section{background:var(--card2);border:1px solid var(--border);border-radius:16px;padding:22px}
+.config-sec-title{font-size:.85rem;font-weight:700;color:#fff;display:flex;align-items:center;gap:8px;margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--border)}
+.config-sec-title i{color:var(--cyan)}
+
+/* ===== RESPONSIVE ===== */
+@media(max-width:1200px){
+  .stats-row{grid-template-columns:repeat(3,1fr)}
+}
+@media(max-width:900px){
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.open{transform:translateX(0);box-shadow:0 0 80px rgba(0,0,0,.7)}
+  .main{margin-left:0}
+  .mob-tog{display:flex !important}
+  .stats-row{grid-template-columns:repeat(2,1fr)}
+  .form-grid{grid-template-columns:1fr}
+  .config-grid{grid-template-columns:1fr}
+  .topbar{padding:0 12px}
+  .body{padding:18px 12px}
+  .tb-admin-name{display:none} /* hide text, keep icon */
+  .site-label{display:none}
+}
+@media(max-width:520px){
+  .stats-row{grid-template-columns:1fr 1fr}
+  .s-num{font-size:1.7rem}
+  .topbar{height:54px}
+  .body{padding:14px 10px}
+  .page-name{font-size:.82rem}
+  .tb-admin-chip{display:none} /* very small — hide chip entirely */
+  .tab-bar { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- BACKDROP -->
+<div class="sb-backdrop" id="sbBackdrop"></div>
+
+<!-- NOTIFICATIONS DROPDOWN -->
+<div class="notif-drop" id="notifDrop">
+  <div class="notif-head">
+    <span class="notif-head-title"><i class="fas fa-bell" style="color:var(--cyan);margin-right:6px"></i>Notificações</span>
+    <button class="notif-mark" onclick="markAllRead()">Marcar todas lidas</button>
+  </div>
+  <div class="notif-list" id="notifList">
+    {% if session.admin_nivel == 'master' %}
+      {% set ns = namespace(has_notif=false) %}
+      {% for a in apoios %}{% if (a['status'] or 'pendente') == 'pendente' %}
+      {% set ns.has_notif = true %}
+      <div class="notif-item unread" onclick="switchTab('tab-apoios');closeNotif()">
+        <div class="notif-ico apoio"><i class="fas fa-hand-holding-heart"></i></div>
+        <div class="notif-txt">
+          <div class="notif-ttl">Apoio pendente</div>
+          <div class="notif-sub">{{ a['tipo'] }} — {{ a['contacto'] }}</div>
+        </div>
+        <div class="notif-time">{{ fmt_date(a['data']) }}</div>
+      </div>
+      {% endif %}{% endfor %}
+      {% for f in familias[-3:]|reverse %}
+      {% set ns.has_notif = true %}
+      <div class="notif-item" onclick="switchTab('tab-familias');closeNotif()">
+        <div class="notif-ico familia"><i class="fas fa-house-chimney-crack"></i></div>
+        <div class="notif-txt">
+          <div class="notif-ttl">Família registada</div>
+          <div class="notif-sub">{{ f['bairro'] }} — {{ f['numero'] }} famílias</div>
+        </div>
+        <div class="notif-time">{{ fmt_date(f['data']) }}</div>
+      </div>
+      {% endfor %}
+      {% if not ns.has_notif %}
+      <div class="notif-empty"><i class="fas fa-check-circle" style="font-size:1.6rem;margin-bottom:8px;opacity:.25;display:block"></i>Sem notificações novas</div>
+      {% endif %}
+    {% else %}
+      <div class="notif-empty"><i class="fas fa-bell-slash" style="font-size:1.6rem;margin-bottom:8px;opacity:.25;display:block"></i>Sem notificações</div>
+    {% endif %}
+  </div>
+</div>
+
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sb">
+  <div class="sb-logo">
+    <a href="/">
+      <div class="sb-shield">
+        <svg viewBox="0 0 46 46" fill="none">
+          <defs><linearGradient id="sg" x1="0" y1="0" x2="46" y2="46" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#2563eb"/><stop offset="100%" stop-color="#06b6d4"/></linearGradient></defs>
+          <path d="M23 3 L40 10 L40 24 C40 33 32 40 23 43 C14 40 6 33 6 24 L6 10 Z" fill="url(#sg)"/>
+          <text x="23" y="29" text-anchor="middle" fill="white" font-size="18" font-weight="bold" font-family="sans-serif">!</text>
+        </svg>
+      </div>
+      <div>
+        <div class="sb-nm">{{ cfg.nome }}</div>
+        <div class="sb-tag">Painel Admin</div>
+      </div>
+    </a>
+  </div>
+  <div class="sb-body">
+    <div class="sb-group">Visão Geral</div>
+    <button class="sbi active" data-tab="dashboard"><span class="sbi-icon"><i class="fas fa-gauge-high"></i></span> Dashboard</button>
+    <div class="sb-group">Conteúdo</div>
+    <button class="sbi" data-tab="tab-alertas"><span class="sbi-icon"><i class="fas fa-bell"></i></span> Alertas
+      {% if stats.alertas_urgentes > 0 %}<span class="sbi-badge">{{ stats.alertas_urgentes }}</span>{% endif %}
+    </button>
+    <button class="sbi" data-tab="tab-familias"><span class="sbi-icon"><i class="fas fa-house-chimney-crack"></i></span> Famílias Registadas</button>
+    <button class="sbi" data-tab="tab-zonas"><span class="sbi-icon"><i class="fas fa-shield-halved"></i></span> Zonas Seguras</button>
+    <div class="sb-group">Dados Recebidos</div>
+    <button class="sbi" data-tab="tab-apoios"><span class="sbi-icon"><i class="fas fa-hand-holding-heart"></i></span> Apoios Recebidos
+      {% if stats.apoios_pendentes > 0 %}<span class="sbi-badge">{{ stats.apoios_pendentes }}</span>{% endif %}
+    </button>
+    <button class="sbi" data-tab="tab-subs"><span class="sbi-icon"><i class="fas fa-satellite-dish"></i></span> Subscrições
+      {% if stats.subs_mes > 0 %}<span class="sbi-badge blue">{{ stats.subs_mes }}</span>{% endif %}
+    </button>
+    {% if session.admin_nivel == 'master' %}
+    <div class="sb-group">Sistema Master</div>
+    <button class="sbi" data-tab="tab-admins"><span class="sbi-icon"><i class="fas fa-user-shield"></i></span> Administradores</button>
+    <button class="sbi" data-tab="tab-config"><span class="sbi-icon"><i class="fas fa-sliders"></i></span> Configurações</button>
+    {% endif %}
+    <div style="height:1px;background:var(--border);margin:14px 8px"></div>
+    <a href="/" class="sbi"><span class="sbi-icon"><i class="fas fa-globe"></i></span> Ver Site Público</a>
+    <a href="/logout" class="sbi danger"><span class="sbi-icon"><i class="fas fa-right-from-bracket"></i></span> Terminar Sessão</a>
+  </div>
+  <div class="sb-user">
+    <div class="sb-av">{{ session.admin_nome[0]|upper if session.admin_nome else 'A' }}</div>
+    <div style="flex:1;overflow:hidden">
+      <div class="sb-un">{{ session.admin_nome }}</div>
+      <div class="sb-ul">{{ session.admin_nivel|title }}</div>
+    </div>
+    <div class="sb-online"></div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <!-- TOPBAR: sticky, never hides, never squishes -->
+  <div class="topbar">
+    <div class="tb-left">
+      <!-- Hamburger always rendered -->
+      <button class="mob-tog" id="mobTog" aria-label="Menu" aria-expanded="false">
+        <i class="fas fa-bars" id="mobTogIcon"></i>
+      </button>
+      <div class="page-name" id="pageTitle">
+        <i class="fas fa-gauge-high"></i> Dashboard
+      </div>
+    </div>
+
+    <!-- RIGHT: never hidden, never collapses -->
+    <div class="tb-right">
+      <div class="tb-admin-chip">
+        <div class="av-sm">{{ session.admin_nome[0]|upper if session.admin_nome else 'A' }}</div>
+        <span class="tb-admin-name">{{ session.admin_nome }}</span>
+      </div>
+      <button class="notif-btn" id="notifBtn" onclick="toggleNotif(event)" title="Notificações">
+        <i class="fas fa-bell"></i>
+        {% if stats.apoios_pendentes > 0 %}<span class="notif-dot"></span>{% endif %}
+      </button>
+      <a href="/" class="btn btn-ghost">
+        <i class="fas fa-globe"></i><span class="site-label"> Site</span>
+      </a>
+      <a href="/logout" class="btn btn-danger" title="Terminar Sessão">
+        <i class="fas fa-right-from-bracket"></i>
+      </a>
+    </div>
+  </div>
+
+  <div class="body">
+    {% with msgs = get_flashed_messages(with_categories=true) %}
+    {% for cat, msg in msgs %}
+    <div class="flash {{ cat }}"><i class="fas fa-{% if cat=='success' %}circle-check{% else %}circle-xmark{% endif %}"></i> {{ msg }}</div>
+    {% endfor %}
+    {% endwith %}
+
+    <!-- STATS -->
+    <div class="stats-row">
+      <div class="s-card blue">
+        <div class="s-top"><div class="s-ico blue"><i class="fas fa-bell"></i></div><span class="s-trend up"><i class="fas fa-circle"></i> {{ stats.alertas_ativos }} activos</span></div>
+        <div><div class="s-num">{{ stats.alertas }}</div><div class="s-label">Total de Alertas</div><div class="s-sub">{{ stats.alertas_urgentes }} urgentes</div></div>
+      </div>
+      <div class="s-card red">
+        <div class="s-top"><div class="s-ico red"><i class="fas fa-house-chimney-crack"></i></div><span class="s-trend warn">{{ stats.familias_registadas }} bairros</span></div>
+        <div><div class="s-num">{{ stats.familias_total }}</div><div class="s-label">Pessoas Afectadas</div><div class="s-sub">Em abrigos temporários</div></div>
+      </div>
+      <div class="s-card green">
+        <div class="s-top"><div class="s-ico green"><i class="fas fa-shield-halved"></i></div><span class="s-trend up">{{ stats.cap_total }} vagas</span></div>
+        <div><div class="s-num">{{ stats.zonas }}</div><div class="s-label">Zonas Seguras Activas</div><div class="s-sub">Capacidade total disponível</div></div>
+      </div>
+      <div class="s-card orange">
+        <div class="s-top"><div class="s-ico orange"><i class="fas fa-hand-holding-heart"></i></div><span class="s-trend up">{{ stats.apoios_semana }} esta semana</span></div>
+        <div><div class="s-num">{{ stats.apoios }}</div><div class="s-label">Apoios Recebidos</div><div class="s-sub">{{ stats.apoios_pendentes }} pendentes</div></div>
+      </div>
+      <div class="s-card purple">
+        <div class="s-top"><div class="s-ico purple"><i class="fas fa-satellite-dish"></i></div><span class="s-trend up">{{ stats.subs_mes }} este mês</span></div>
+        <div><div class="s-num">{{ stats.subscricoes }}</div><div class="s-label">Subscritores</div><div class="s-sub">Notificações activas</div></div>
+      </div>
+    </div>
+
+    <!-- TABS -->
+    <div class="tab-bar">
+      <button class="tb-btn active" data-tab="dashboard"><i class="fas fa-gauge-high"></i> Dashboard</button>
+      <button class="tb-btn" data-tab="tab-alertas"><i class="fas fa-bell"></i> Alertas</button>
+      <button class="tb-btn" data-tab="tab-familias"><i class="fas fa-house-chimney-crack"></i> Famílias</button>
+      <button class="tb-btn" data-tab="tab-zonas"><i class="fas fa-shield-halved"></i> Zonas</button>
+      <button class="tb-btn" data-tab="tab-apoios"><i class="fas fa-hand-holding-heart"></i> Apoios</button>
+      <button class="tb-btn" data-tab="tab-subs"><i class="fas fa-satellite-dish"></i> Subscrições</button>
+      {% if session.admin_nivel == 'master' %}
+      <button class="tb-btn" data-tab="tab-admins"><i class="fas fa-user-shield"></i> Admins</button>
+      <button class="tb-btn" data-tab="tab-config"><i class="fas fa-sliders"></i> Configurações</button>
+      {% endif %}
+    </div>
+
+    <!-- DASHBOARD -->
+    <div id="dashboard" class="tab-pane active">
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title"><i class="fas fa-clock-rotate-left"></i> Últimos Alertas</div>
+          <button class="btn btn-primary btn-submit" onclick="switchTab('tab-alertas')"><i class="fas fa-plus"></i> Novo Alerta</button>
+        </div>
+        <div class="tbl-wrap"><table><thead><tr><th>Título</th><th>Tipo</th><th>Data</th><th>Estado</th></tr></thead>
+        <tbody>
+        {% for a in alertas[:5] %}
+        <tr>
+          <td><strong style="color:#fff">{{ a['titulo'] }}</strong></td>
+          <td><span class="badge b-{{ a['tipo'] }}">{{ a['tipo'] }}</span></td>
+          <td style="color:var(--muted)">{{ fmt_datetime(a['data']) }}</td>
+          <td><span class="badge {{ 'b-on' if a['ativo'] else 'b-off' }}">{{ 'Activo' if a['ativo'] else 'Pausado' }}</span></td>
+        </tr>
+        {% else %}<tr class="empty"><td colspan="4"><i class="fas fa-bell-slash"></i>Sem alertas</td></tr>{% endfor %}
+        </tbody></table></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+        <div class="card">
+          <div class="card-title"><i class="fas fa-hand-holding-heart"></i> Últimos Apoios</div>
+          {% if apoios %}{% for a in apoios[:4] %}
+          <div style="padding:10px 0;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px">
+            <div style="width:8px;height:8px;background:{% if (a['status'] or 'pendente')=='confirmado' %}var(--emerald){% elif (a['status'] or 'pendente')=='recusado' %}var(--red){% else %}var(--amber){% endif %};border-radius:50%;flex-shrink:0"></div>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:.88rem;color:#fff;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ a['tipo'] }} — {{ a['quantidade'] }}</div>
+              <div style="font-size:.76rem;color:var(--muted)">{{ a['contacto'] }} · {{ fmt_date(a['data']) }}</div>
+            </div>
+            <span class="badge b-{{ a['status'] or 'pendente' }}">{{ a['status'] or 'pendente' }}</span>
+          </div>
+          {% endfor %}{% else %}<p style="color:var(--muted);font-size:.86rem;text-align:center;padding:20px">Nenhum apoio recebido</p>{% endif %}
+        </div>
+        <div class="card">
+          <div class="card-title"><i class="fas fa-users"></i> Resumo de Famílias</div>
+          {% if familias %}{% for f in familias[:4] %}
+          <div style="padding:10px 0;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px">
+            <div style="width:8px;height:8px;background:#f87171;border-radius:50%;flex-shrink:0"></div>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:.88rem;color:#fff;font-weight:600">{{ f['bairro'] }}</div>
+              <div style="font-size:.76rem;color:var(--muted)">{{ f['numero'] }} famílias · {{ f['situacao'] }}</div>
+            </div>
+          </div>
+          {% endfor %}{% else %}<p style="color:var(--muted);font-size:.86rem;text-align:center;padding:20px">Nenhuma família</p>{% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- ALERTAS -->
+    <div id="tab-alertas" class="tab-pane">
+      <div class="card">
+        <div class="card-title"><i class="fas fa-plus-circle"></i> Publicar Novo Alerta</div>
+        <form action="/admin/alerta/add" method="POST">
+          <div class="form-grid">
+            <div class="fg"><label class="fl">Título *</label><input type="text" name="titulo" class="fi" placeholder="Título do alerta" required></div>
+            <div class="fg"><label class="fl">Tipo *</label>
+              <select name="tipo" class="fi" required>
+                <option value="urgente">🔴 Urgente — Acção imediata</option>
+                <option value="atencao">🟠 Atenção — Cautela necessária</option>
+                <option value="informativo">🔵 Informativo — Comunicação geral</option>
+              </select>
+            </div>
+          </div>
+          <div class="fg"><label class="fl">Conteúdo completo *</label>
+            <textarea name="conteudo" class="fi" placeholder="Descreva o alerta em detalhe..." required style="min-height:100px"></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary btn-submit"><i class="fas fa-broadcast-tower"></i> Publicar Alerta</button>
+        </form>
+      </div>
+      <div class="card">
+        <div class="card-title"><i class="fas fa-list"></i> Alertas Publicados ({{ alertas|length }})</div>
+        <div class="tbl-wrap"><table><thead><tr><th>Título</th><th>Tipo</th><th>Data/Hora</th><th>Estado</th><th>Acções</th></tr></thead>
+        <tbody>
+        {% for a in alertas %}
+        <tr>
+          <td><strong style="color:#fff">{{ a['titulo'] }}</strong><br><span style="font-size:.78rem;color:var(--muted)">{{ a['conteudo'][:60] }}...</span></td>
+          <td><span class="badge b-{{ a['tipo'] }}">{{ a['tipo'] }}</span></td>
+          <td style="color:var(--muted);font-size:.82rem">{{ fmt_datetime(a['data']) }}</td>
+          <td><span class="badge {{ 'b-on' if a['ativo'] else 'b-off' }}">{{ 'Activo' if a['ativo'] else 'Pausado' }}</span></td>
+          <td><div class="acts">
+            <a href="/admin/alerta/editar/{{ a['id'] }}" class="act-btn teal" title="Editar"><i class="fas fa-pencil"></i></a>
+            <a href="/admin/alerta/toggle/{{ a['id'] }}" class="act-btn warn" title="{{ 'Pausar' if a['ativo'] else 'Activar' }}"><i class="fas fa-toggle-{{ 'on' if a['ativo'] else 'off' }}"></i></a>
+            <a href="/admin/alerta/delete/{{ a['id'] }}" class="act-btn danger" onclick="return confirm('Eliminar alerta?')"><i class="fas fa-trash"></i></a>
+          </div></td>
+        </tr>
+        {% else %}<tr class="empty"><td colspan="5"><i class="fas fa-bell-slash"></i>Nenhum alerta publicado</td></tr>{% endfor %}
+        </tbody></table></div>
+      </div>
+    </div>
+
+    <!-- FAMÍLIAS -->
+    <div id="tab-familias" class="tab-pane">
+      <div class="card">
+        <div class="card-title"><i class="fas fa-plus-circle"></i> Registar Família Afectada</div>
+        <form action="/admin/familia/add" method="POST">
+          <div class="form-grid">
+            <div class="fg"><label class="fl">Bairro / Localidade *</label><input type="text" name="bairro" class="fi" placeholder="Nome do bairro" required></div>
+            <div class="fg"><label class="fl">Número de Famílias *</label><input type="number" name="numero" class="fi" min="1" placeholder="Ex: 12" required></div>
+          </div>
+          <div class="form-grid">
+            <div class="fg"><label class="fl">Situação de Emergência *</label>
+              <select name="situacao" class="fi" required>
+                <option value="">Seleccione...</option>
+                <option value="Inundações">Inundações</option>
+                <option value="Ciclone">Ciclone</option>
+                <option value="Seca">Seca</option>
+                <option value="Incêndio">Incêndio</option>
+                <option value="Conflito">Conflito</option>
+                <option value="Outro">Outro</option>
+              </select>
+            </div>
+            <div class="fg"><label class="fl">Local de Abrigo *</label><input type="text" name="abrigo" class="fi" placeholder="Escola, centro comunitário..." required></div>
+          </div>
+          <div class="fg"><label class="fl">Necessidades Identificadas *</label>
+            <textarea name="necessidades" class="fi" placeholder="Ex: Água potável, alimentos, medicamentos..." required></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary btn-submit"><i class="fas fa-save"></i> Registar Família</button>
+        </form>
+      </div>
+      <div class="card">
+        <div class="card-title"><i class="fas fa-list"></i> Famílias Registadas ({{ familias|length }})</div>
+        <div class="tbl-wrap"><table><thead><tr><th>Bairro</th><th>Famílias</th><th>Situação</th><th>Abrigo</th><th>Necessidades</th><th>Data</th><th>Acções</th></tr></thead>
+        <tbody>
+        {% for f in familias %}
+        <tr>
+          <td><strong style="color:#fff">{{ f['bairro'] }}</strong></td>
+          <td><strong style="color:var(--cyan)">{{ f['numero'] }}</strong></td>
+          <td>{{ f['situacao'] }}</td>
+          <td style="color:var(--muted)">{{ f['abrigo'] }}</td>
+          <td style="color:var(--muted);font-size:.82rem">{{ f['necessidades'][:50] }}{% if f['necessidades']|length > 50 %}...{% endif %}</td>
+          <td style="color:var(--muted);font-size:.78rem">{{ fmt_date(f['data']) }}</td>
+          <td><div class="acts">
+            <a href="/admin/familia/editar/{{ f['id'] }}" class="act-btn teal" title="Editar"><i class="fas fa-pencil"></i></a>
+            <a href="/admin/familia/delete/{{ f['id'] }}" class="act-btn danger" onclick="return confirm('Eliminar?')"><i class="fas fa-trash"></i></a>
+          </div></td>
+        </tr>
+        {% else %}<tr class="empty"><td colspan="7"><i class="fas fa-house"></i>Nenhuma família</td></tr>{% endfor %}
+        </tbody></table></div>
+      </div>
+    </div>
+
+    <!-- ZONAS -->
+    <div id="tab-zonas" class="tab-pane">
+      <div class="card">
+        <div class="card-title"><i class="fas fa-plus-circle"></i> Adicionar Zona Segura</div>
+        <form action="/admin/zona/add" method="POST">
+          <div class="form-grid">
+            <div class="fg"><label class="fl">Nome da Zona *</label><input type="text" name="nome" class="fi" placeholder="Ex: Escola Primária de Napipine" required></div>
+            <div class="fg"><label class="fl">Capacidade (pessoas) *</label><input type="number" name="capacidade" class="fi" min="1" placeholder="Ex: 200" required></div>
+          </div>
+          <div class="fg"><label class="fl">Recursos Disponíveis *</label>
+            <textarea name="recursos" class="fi" placeholder="Ex: Água potável, alimentação, assistência médica..." required></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary btn-submit"><i class="fas fa-save"></i> Adicionar Zona</button>
+        </form>
+      </div>
+      <div class="card">
+        <div class="card-title"><i class="fas fa-list"></i> Zonas Registadas ({{ zonas|length }})</div>
+        <div class="tbl-wrap"><table><thead><tr><th>Nome</th><th>Capacidade</th><th>Recursos</th><th>Estado</th><th>Acções</th></tr></thead>
+        <tbody>
+        {% for z in zonas %}
+        <tr>
+          <td><strong style="color:#fff">{{ z['nome'] }}</strong></td>
+          <td><strong style="color:var(--emerald)">{{ z['capacidade'] }}</strong> pessoas</td>
+          <td style="color:var(--muted)">{{ z['recursos'][:70] }}{% if z['recursos']|length > 70 %}...{% endif %}</td>
+          <td><span class="badge {{ 'b-on' if z['ativa'] else 'b-off' }}">{{ 'Activa' if z['ativa'] else 'Inactiva' }}</span></td>
+          <td><div class="acts">
+            <a href="/admin/zona/editar/{{ z['id'] }}" class="act-btn teal" title="Editar"><i class="fas fa-pencil"></i></a>
+            <a href="/admin/zona/toggle/{{ z['id'] }}" class="act-btn warn" title="{{ 'Desactivar' if z['ativa'] else 'Activar' }}"><i class="fas fa-toggle-{{ 'on' if z['ativa'] else 'off' }}"></i></a>
+            <a href="/admin/zona/delete/{{ z['id'] }}" class="act-btn danger" onclick="return confirm('Eliminar zona?')"><i class="fas fa-trash"></i></a>
+          </div></td>
+        </tr>
+        {% else %}<tr class="empty"><td colspan="5"><i class="fas fa-shield-halved"></i>Nenhuma zona</td></tr>{% endfor %}
+        </tbody></table></div>
+      </div>
+    </div>
+
+    <!-- APOIOS -->
+    <div id="tab-apoios" class="tab-pane">
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title"><i class="fas fa-hand-holding-heart"></i> Apoios Recebidos ({{ apoios|length }})</div>
+          <span class="badge b-pendente">{{ stats.apoios_pendentes }} pendentes</span>
+        </div>
+        <div class="tbl-wrap"><table><thead><tr><th>Tipo</th><th>Quantidade</th><th>Local</th><th>Contacto</th><th>Data</th><th>Estado</th><th>Acções</th></tr></thead>
+        <tbody>
+        {% for a in apoios %}
+        <tr>
+          <td><strong style="color:#fff">{{ a['tipo'] }}</strong></td>
+          <td>{{ a['quantidade'] }}</td>
+          <td style="color:var(--muted)">{{ a['local_entrega'] }}</td>
+          <td style="color:var(--cyan)">{{ a['contacto'] }}</td>
+          <td style="color:var(--muted);font-size:.8rem">{{ fmt_datetime(a['data']) }}</td>
+          <td><span class="badge b-{{ a['status'] or 'pendente' }}">{{ a['status'] or 'pendente' }}</span></td>
+          <td><div class="acts">
+            {% if (a['status'] or 'pendente') == 'pendente' %}
+            <a href="/admin/apoio/confirmar/{{ a['id'] }}" class="act-btn green" title="Confirmar apoio"><i class="fas fa-check"></i></a>
+            <a href="/admin/apoio/recusar/{{ a['id'] }}" class="act-btn danger" title="Recusar apoio" onclick="return confirm('Recusar este apoio?')"><i class="fas fa-times"></i></a>
+            {% endif %}
+            <a href="/admin/apoio/delete/{{ a['id'] }}" class="act-btn danger" title="Eliminar" onclick="return confirm('Eliminar apoio?')"><i class="fas fa-trash"></i></a>
+          </div></td>
+        </tr>
+        {% else %}<tr class="empty"><td colspan="7"><i class="fas fa-inbox"></i>Nenhum apoio recebido</td></tr>{% endfor %}
+        </tbody></table></div>
+      </div>
+    </div>
+
+    <!-- SUBSCRIÇÕES -->
+    <div id="tab-subs" class="tab-pane">
+      <div class="card">
+        <div class="card-title"><i class="fas fa-satellite-dish"></i> Subscritores de Alertas ({{ subscricoes|length }})</div>
+        <div class="tbl-wrap"><table><thead><tr><th>Nome</th><th>Telemóvel</th><th>Email</th><th>Canais</th><th>Tipos</th><th>Data</th></tr></thead>
+        <tbody>
+        {% for s in subscricoes %}
+        <tr>
+          <td><strong style="color:#fff">{{ s['nome'] }}</strong></td>
+          <td style="color:var(--cyan)">{{ s['telefone'] }}</td>
+          <td style="color:var(--muted)">{{ s['email'] or '—' }}</td>
+          <td>{{ s['metodos'] }}</td>
+          <td style="color:var(--muted);font-size:.8rem">{{ s['tipo_alertas'] }}</td>
+          <td style="color:var(--muted);font-size:.78rem">{{ fmt_date(s['data']) }}</td>
+        </tr>
+        {% else %}<tr class="empty"><td colspan="6"><i class="fas fa-bell-slash"></i>Nenhuma subscrição</td></tr>{% endfor %}
+        </tbody></table></div>
+      </div>
+    </div>
+
+    {% if session.admin_nivel == 'master' %}
+    <!-- ADMINS -->
+    <div id="tab-admins" class="tab-pane">
+      <div class="card">
+        <div class="card-title"><i class="fas fa-user-plus"></i> Criar Novo Administrador</div>
+        <form action="/admin/admin_user/add" method="POST">
+          <div class="form-grid">
+            <div class="fg"><label class="fl">Nome Completo *</label><input type="text" name="nome" class="fi" placeholder="Nome do administrador" required></div>
+            <div class="fg"><label class="fl">Email *</label><input type="email" name="email" class="fi" placeholder="email@dominio.com" required></div>
+          </div>
+          <div class="form-grid">
+            <div class="fg"><label class="fl">Palavra-passe *</label><input type="password" name="password" class="fi" placeholder="Palavra-passe segura" required></div>
+            <div class="fg"><label class="fl">Nível de Acesso *</label>
+              <select name="nivel" class="fi">
+                <option value="admin">Admin — Acesso padrão</option>
+                <option value="master">Master — Acesso total</option>
+              </select>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary btn-submit"><i class="fas fa-save"></i> Criar Administrador</button>
+        </form>
+      </div>
+      <div class="card">
+        <div class="card-title"><i class="fas fa-users-gear"></i> Administradores do Sistema ({{ admins|length }})</div>
+        <div class="tbl-wrap"><table><thead><tr><th>Nome</th><th>Email</th><th>Nível</th><th>Acções</th></tr></thead>
+        <tbody>
+        {% for a in admins %}
+        <tr>
+          <td>
+            <div style="display:flex;align-items:center;gap:10px">
+              <div style="width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,var(--blue),var(--cyan));display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:.9rem;flex-shrink:0">{{ a['nome'][0]|upper }}</div>
+              <strong style="color:#fff">{{ a['nome'] }}</strong>
+              {% if a['id'] == session.admin_id %}<span style="font-size:.7rem;color:var(--muted);background:var(--bg2);padding:2px 8px;border-radius:5px;flex-shrink:0">Você</span>{% endif %}
+            </div>
+          </td>
+          <td style="color:var(--muted)">{{ a['email'] }}</td>
+          <td><span class="badge b-{{ a['nivel'] }}">{% if a['nivel']=='master' %}<i class="fas fa-crown"></i>{% endif %} {{ a['nivel'] }}</span></td>
+          <td>
+            {% if a['id'] != session.admin_id %}
+            <a href="/admin/admin_user/delete/{{ a['id'] }}" class="act-btn danger" onclick="return confirm('Eliminar administrador?')"><i class="fas fa-trash"></i></a>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+        </tbody></table></div>
+      </div>
+    </div>
+
+    <!-- CONFIG -->
+    <div id="tab-config" class="tab-pane">
+      <div class="card">
+        <div class="card-title"><i class="fas fa-sliders"></i> Configurações do Site</div>
+        <form action="/admin/config/update" method="POST">
+          <div class="config-grid">
+            <div class="config-section">
+              <div class="config-sec-title"><i class="fas fa-palette"></i> Identidade do Site</div>
+              <div class="fg"><label class="fl">Nome do Site *</label><input type="text" name="site_nome" class="fi" value="{{ cfg.nome }}" required></div>
+              <div class="fg"><label class="fl">Subtítulo / Slogan</label><input type="text" name="site_subtitulo" class="fi" value="{{ cfg.subtitulo }}"></div>
+            </div>
+            <div class="config-section">
+              <div class="config-sec-title"><i class="fas fa-address-book"></i> Contacto</div>
+              <div class="fg"><label class="fl">Email</label><input type="email" name="site_email" class="fi" value="{{ cfg.email }}"></div>
+              <div class="fg"><label class="fl">Telefone</label><input type="text" name="site_telefone" class="fi" value="{{ cfg.telefone }}"></div>
+              <div class="fg"><label class="fl">Endereço</label><input type="text" name="site_endereco" class="fi" value="{{ cfg.endereco }}"></div>
+            </div>
+            <div class="config-section">
+              <div class="config-sec-title"><i class="fas fa-share-nodes"></i> Redes Sociais</div>
+              <div class="fg"><label class="fl">Facebook URL</label><input type="url" name="site_facebook" class="fi" value="{{ cfg.facebook }}"></div>
+              <div class="fg"><label class="fl">Twitter URL</label><input type="url" name="site_twitter" class="fi" value="{{ cfg.twitter }}"></div>
+              <div class="fg"><label class="fl">Número WhatsApp</label><input type="text" name="site_whatsapp" class="fi" value="{{ cfg.whatsapp }}"></div>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary" style="padding:13px 28px;font-size:.9rem;margin-top:10px">
+            <i class="fas fa-save"></i> Guardar Configurações
+          </button>
+        </form>
+      </div>
+    </div>
+    {% endif %}
+
+  </div><!-- /body -->
+</div><!-- /main -->
+
+<script>
+/* ===== TABS ===== */
+const tabMeta = {
+  'dashboard':    {label:'Dashboard',          icon:'fas fa-gauge-high'},
+  'tab-alertas':  {label:'Gestão de Alertas',  icon:'fas fa-bell'},
+  'tab-familias': {label:'Famílias Afectadas', icon:'fas fa-house-chimney-crack'},
+  'tab-zonas':    {label:'Zonas Seguras',       icon:'fas fa-shield-halved'},
+  'tab-apoios':   {label:'Apoios Recebidos',    icon:'fas fa-hand-holding-heart'},
+  'tab-subs':     {label:'Subscritores',        icon:'fas fa-satellite-dish'},
+  'tab-admins':   {label:'Administradores',     icon:'fas fa-user-shield'},
+  'tab-config':   {label:'Configurações',       icon:'fas fa-sliders'}
+};
+
+function switchTab(id) {
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tb-btn, .sbi[data-tab]').forEach(b => b.classList.remove('active'));
+  const pane = document.getElementById(id);
+  if (pane) pane.classList.add('active');
+  document.querySelectorAll(`[data-tab="${id}"]`).forEach(b => b.classList.add('active'));
+  const m = tabMeta[id] || tabMeta['dashboard'];
+  document.getElementById('pageTitle').innerHTML = `<i class="${m.icon}"></i> ${m.label}`;
+  history.replaceState(null, '', '#' + id);
+  closeSidebar();
+}
+
+document.querySelectorAll('[data-tab]').forEach(el => {
+  el.addEventListener('click', function(e) { e.preventDefault(); switchTab(this.dataset.tab); });
+});
+
+// Server sets the active tab after redirect (e.g. after edit/save)
+const serverTab = '{{ active_tab }}';
+const hash = location.hash.replace('#', '');
+const startTab = (hash && document.getElementById(hash)) ? hash
+               : (serverTab && serverTab !== 'dashboard' && document.getElementById(serverTab)) ? serverTab
+               : null;
+if (startTab) switchTab(startTab);
+
+/* ===== SIDEBAR ===== */
+const mobTog   = document.getElementById('mobTog');
+const mobIcon  = document.getElementById('mobTogIcon');
+const sb       = document.getElementById('sb');
+const backdrop = document.getElementById('sbBackdrop');
+
+function openSidebar() {
+  sb.classList.add('open');
+  backdrop.classList.add('show');
+  mobIcon.className = 'fas fa-times';
+  mobTog.classList.add('open');
+  mobTog.setAttribute('aria-expanded','true');
+  document.body.style.overflow = 'hidden';
+}
+function closeSidebar() {
+  sb.classList.remove('open');
+  backdrop.classList.remove('show');
+  mobIcon.className = 'fas fa-bars';
+  mobTog.classList.remove('open');
+  mobTog.setAttribute('aria-expanded','false');
+  document.body.style.overflow = '';
+}
+
+mobTog.addEventListener('click', function(e) {
+  e.stopPropagation();
+  sb.classList.contains('open') ? closeSidebar() : openSidebar();
+});
+backdrop.addEventListener('click', closeSidebar);
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { closeSidebar(); closeModal(); closeNotif(); }
+});
+
+/* ===== NOTIFICATIONS ===== */
+function toggleNotif(e) {
+  e.stopPropagation();
+  document.getElementById('notifDrop').classList.toggle('show');
+}
+function closeNotif() {
+  document.getElementById('notifDrop').classList.remove('show');
+}
+function markAllRead() {
+  document.querySelectorAll('.notif-item.unread').forEach(i => i.classList.remove('unread'));
+  // Remove pulse dot
+  const dot = document.querySelector('.notif-dot');
+  if (dot) dot.remove();
+  closeNotif();
+}
+document.addEventListener('click', function(e) {
+  const drop = document.getElementById('notifDrop');
+  const btn  = document.getElementById('notifBtn');
+  if (drop && drop.classList.contains('show') && !drop.contains(e.target) && e.target !== btn && !btn.contains(e.target)) {
+    closeNotif();
+  }
+});
+
+
+</script>
+</body>
+</html>

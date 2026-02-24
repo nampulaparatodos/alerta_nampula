@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login — {{ cfg.nome }}</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Fraunces:ital,opsz,wght@0,9..144,700;0,9..144,900;1,9..144,400&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#04080f;--card:#0e1929;--border:rgba(99,179,237,.08);
+  --blue:#2563eb;--cyan:#06b6d4;--text:#dbeafe;--muted:#64748b;--soft:#94a3b8;}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);
+  min-height:100vh;display:grid;place-items:center;
+  background:radial-gradient(ellipse 120% 80% at 30% -10%,rgba(37,99,235,.14),transparent),
+             radial-gradient(ellipse 80% 60% at 80% 110%,rgba(6,182,212,.08),transparent),
+             var(--bg)}
+.wrap{width:100%;max-width:460px;padding:24px}
+.card{background:rgba(14,25,41,.95);backdrop-filter:blur(20px);
+  border:1px solid var(--border);border-radius:28px;
+  padding:48px 44px;box-shadow:0 32px 80px rgba(0,0,0,.6),
+    0 0 80px rgba(37,99,235,.1);position:relative;overflow:hidden}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--blue),var(--cyan))}
+.top-logo{display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:40px}
+.shield{width:56px;height:56px}
+.shield svg{width:100%;height:100%}
+.logo-info{}
+.logo-name{font-family:'Fraunces',serif;font-size:1.4rem;font-weight:900;
+  color:#fff;letter-spacing:-.3px}
+.logo-sub{font-size:.72rem;color:var(--muted);margin-top:2px;text-transform:uppercase;letter-spacing:.8px}
+h2{font-family:'Fraunces',serif;font-size:1.8rem;font-weight:900;color:#fff;
+  text-align:center;letter-spacing:-.5px;margin-bottom:6px}
+.subtitle{text-align:center;color:var(--soft);font-size:.88rem;margin-bottom:32px}
+.flash{padding:12px 16px;border-radius:12px;margin-bottom:20px;
+  font-size:.86rem;display:flex;align-items:center;gap:10px}
+.flash.error{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);color:#f87171}
+.flash.success{background:rgba(5,150,105,.08);border:1px solid rgba(5,150,105,.2);color:#34d399}
+.fg{margin-bottom:20px}
+.fl{display:block;font-size:.75rem;font-weight:700;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.8px;margin-bottom:9px}
+.fi-wrap{position:relative}
+.fi-wrap i{position:absolute;left:15px;top:50%;transform:translateY(-50%);
+  color:var(--muted);font-size:.9rem;pointer-events:none}
+.fi{width:100%;padding:13px 16px 13px 42px;
+  background:rgba(255,255,255,.04);
+  border:1px solid var(--border);border-radius:13px;
+  color:#fff;font-size:.94rem;font-family:inherit;transition:.25s}
+.fi:focus{outline:none;border-color:rgba(37,99,235,.5);
+  box-shadow:0 0 0 4px rgba(37,99,235,.1);background:rgba(37,99,235,.05)}
+.fi::placeholder{color:var(--muted)}
+.btn-login{width:100%;padding:15px;
+  background:linear-gradient(135deg,var(--blue),var(--cyan));color:#fff;
+  border:none;border-radius:13px;font-size:.95rem;font-weight:700;cursor:pointer;
+  font-family:inherit;transition:.3s;display:flex;align-items:center;
+  justify-content:center;gap:10px;box-shadow:0 4px 24px rgba(37,99,235,.4);
+  margin-top:4px}
+.btn-login:hover{transform:translateY(-2px);box-shadow:0 8px 36px rgba(37,99,235,.55)}
+.back{display:block;text-align:center;margin-top:22px;color:var(--muted);
+  font-size:.84rem;text-decoration:none;transition:.2s}
+.back:hover{color:#fff}
+.hint{background:rgba(6,182,212,.06);border:1px solid rgba(6,182,212,.15);
+  border-radius:13px;padding:16px 18px;margin-bottom:24px}
+.hint p{font-size:.82rem;color:var(--soft);margin:3px 0;
+  display:flex;align-items:center;gap:8px}
+.hint p i{color:var(--cyan);width:14px}
+.hint p strong{color:#fff}
+@media(max-width:480px){
+  .card{padding:36px 26px;border-radius:20px}
+  .wrap{padding:16px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <div class="top-logo">
+      <div class="shield">
+        <svg viewBox="0 0 46 46" fill="none">
+          <defs><linearGradient id="g" x1="0" y1="0" x2="46" y2="46" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#2563eb"/><stop offset="100%" stop-color="#06b6d4"/></linearGradient></defs>
+          <path d="M23 3 L40 10 L40 24 C40 33 32 40 23 43 C14 40 6 33 6 24 L6 10 Z" fill="url(#g)"/>
+          <path d="M23 3 L40 10 L40 24 C40 33 32 40 23 43 C14 40 6 33 6 24 L6 10 Z" fill="none" stroke="rgba(255,255,255,.2)" stroke-width="1"/>
+          <text x="23" y="29" text-anchor="middle" fill="white" font-size="18" font-weight="bold" font-family="sans-serif">!</text>
+        </svg>
+      </div>
+      <div class="logo-info">
+        <div class="logo-name">{{ cfg.nome }}</div>
+        <div class="logo-sub">Painel Admin</div>
+      </div>
+    </div>
+
+    <h2>Bem-vindo</h2>
+    <p class="subtitle">Acesso exclusivo a administradores do sistema</p>
+
+    {% with msgs = get_flashed_messages(with_categories=true) %}
+    {% for cat, msg in msgs %}
+    <div class="flash {{ cat }}">
+      <i class="fas fa-{% if cat=='error' %}circle-xmark{% else %}circle-check{% endif %}"></i> {{ msg }}
+    </div>
+    {% endfor %}
+    {% endwith %}
+    <form method="POST" action="/login">
+      <div class="fg">
+        <label class="fl">Email</label>
+        <div class="fi-wrap">
+          <i class="fas fa-envelope"></i>
+          <input type="email" name="email" class="fi" placeholder="seu@email.com" required autofocus>
+        </div>
+      </div>
+      <div class="fg">
+        <label class="fl">Palavra-passe</label>
+        <div class="fi-wrap">
+          <i class="fas fa-lock"></i>
+          <input type="password" name="password" class="fi" placeholder="••••••••••" required>
+        </div>
+      </div>
+      <button type="submit" class="btn-login">
+        <i class="fas fa-right-to-bracket"></i> Entrar no Painel
+      </button>
+    </form>
+
+    <a href="/" class="back"><i class="fas fa-arrow-left"></i> Voltar ao site público</a>
+  </div>
+</div>
+</body>
+</html>

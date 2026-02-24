@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Editar Alerta — {{ cfg.nome }}</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#04080f;--card:#0e1929;--border:rgba(99,179,237,.1);--blue:#2563eb;--cyan:#06b6d4;--text:#dbeafe;--muted:#64748b;}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.box{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:36px;width:100%;max-width:560px}
+.box-title{font-size:1.1rem;font-weight:800;color:#fff;display:flex;align-items:center;gap:10px;margin-bottom:28px}
+.box-title i{color:var(--cyan)}
+.fg{margin-bottom:18px}
+.fl{display:block;font-size:.73rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:8px}
+.fi{width:100%;padding:12px 15px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:11px;color:#fff;font-size:.92rem;font-family:inherit;transition:.2s}
+.fi:focus{outline:none;border-color:rgba(37,99,235,.5);box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+textarea.fi{min-height:120px;resize:vertical}
+select.fi option{background:#0a1225}
+.actions{display:flex;gap:10px;margin-top:8px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:12px 22px;border-radius:11px;font-size:.88rem;font-weight:700;cursor:pointer;border:none;font-family:inherit;text-decoration:none;transition:.2s}
+.btn-primary{background:linear-gradient(135deg,#2563eb,#06b6d4);color:#fff}
+.btn-primary:hover{opacity:.9;transform:translateY(-1px)}
+.btn-ghost{background:rgba(255,255,255,.06);color:var(--muted);border:1px solid var(--border)}
+.btn-ghost:hover{color:#fff;background:rgba(255,255,255,.1)}
+</style>
+</head>
+<body>
+<div class="box">
+  <div class="box-title"><i class="fas fa-broadcast-tower"></i> Republicar Alerta</div>
+  <form action="/admin/alerta/editar/{{ alerta['id'] }}" method="POST">
+    <div class="fg">
+      <label class="fl">Título *</label>
+      <input type="text" name="titulo" class="fi" value="{{ alerta['titulo'] }}" required>
+    </div>
+    <div class="fg">
+      <label class="fl">Tipo *</label>
+      <select name="tipo" class="fi" required>
+        <option value="urgente" {% if alerta['tipo']=='urgente' %}selected{% endif %}>🔴 Urgente — Acção imediata</option>
+        <option value="atencao" {% if alerta['tipo']=='atencao' %}selected{% endif %}>🟠 Atenção — Cautela necessária</option>
+        <option value="informativo" {% if alerta['tipo']=='informativo' %}selected{% endif %}>🔵 Informativo — Comunicação geral</option>
+      </select>
+    </div>
+    <div class="fg">
+      <label class="fl">Conteúdo *</label>
+      <textarea name="conteudo" class="fi" required>{{ alerta['conteudo'] }}</textarea>
+    </div>
+    <div class="actions">
+      <button type="submit" class="btn btn-primary"><i class="fas fa-broadcast-tower"></i> Republicar Alerta</button>
+      <a href="/admin?tab=tab-alertas" class="btn btn-ghost"><i class="fas fa-arrow-left"></i> Cancelar</a>
+    </div>
+  </form>
+</div>
+</body>
+</html>
